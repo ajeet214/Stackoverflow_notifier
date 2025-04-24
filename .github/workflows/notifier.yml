@@ -1,0 +1,18 @@
+name: stackoverflow-tag-alert
+on:
+  schedule:
+    - cron: "*/2 * * * *"          # every 2 minutes
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install requests
+      - env:
+          PUSHOVER_USER_KEY:  ${{ secrets.PUSHOVER_USER_KEY }}
+          PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_APP_TOKEN }}
+          STACK_APPS_KEY:     ${{ secrets.STACK_APPS_KEY }}   # optional
+        run: python so_notifier.py
