@@ -10,15 +10,17 @@ import os, time, json, pathlib, requests, html
 TAGS = ["selenium", "web-scraping"]          # ← your tag list
 CACHE_FILE = pathlib.Path("last_seen.json")  # persisted by Git
 SO_API = "https://api.stackexchange.com/2.3/questions"
-PUSHOVER_USER = os.environ["PUSHOVER_USER_KEY"]
-PUSHOVER_TOKEN = os.environ["PUSHOVER_APP_TOKEN"]
+PUSHOVER_USER = os.environ["PUSHOVER_USER"]
+PUSHOVER_TOKEN = os.environ["PUSHOVER_TOKEN"]
 STACK_APPS_KEY = os.getenv("STACK_APPS_KEY")  # optional
 # ----------------------------------------------------------------------
+
 
 def load_cache() -> dict:
     if CACHE_FILE.exists():
         return json.loads(CACHE_FILE.read_text())
     return {"last": 0}
+
 
 def save_cache(data: dict) -> None:
     CACHE_FILE.write_text(json.dumps(data))
@@ -38,6 +40,7 @@ def fetch_new(since: int):
     r.raise_for_status()
     return r.json()["items"]
 
+
 def push(title: str, url: str):
     r = requests.post("https://api.pushover.net/1/messages.json", data={
         "token":   PUSHOVER_TOKEN,
@@ -48,12 +51,14 @@ def push(title: str, url: str):
     })
     r.raise_for_status()
 
+
 def main():
     cache = load_cache()
     for q in reversed(fetch_new(cache["last"])):
         push(html.unescape(q["title"]), q["link"])
         cache["last"] = max(cache["last"], q["creation_date"])
     save_cache(cache)
+
 
 if __name__ == "__main__":
     main()
