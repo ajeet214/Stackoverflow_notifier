@@ -12,7 +12,7 @@ jobs:
           python-version: "3.11"
       - run: python -m pip install requests
       - env:
-          PUSHOVER_USER_KEY:  ${{ secrets.PUSHOVER_USER }}
-          PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+          PUSHOVER_USER:  ${{ secrets.PUSHOVER_USER }}
+          PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
           STACK_APPS_KEY:     ${{ secrets.STACK_APPS_KEY }}   # optional
         run: python so_notifier.py
