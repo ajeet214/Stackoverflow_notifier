@@ -14,8 +14,8 @@ TAGS = ["selenium", "web-scraping"]          # ← your tag list
 CACHE_FILE = pathlib.Path("last_seen.json")  # persisted by Git
 SO_API = "https://api.stackexchange.com/2.3/questions"
 
-PUSHOVER_USER = os.getenv["PUSHOVER_USER"]
-PUSHOVER_TOKEN = os.getenv["PUSHOVER_TOKEN"]
+PUSHOVER_USER = os.getenv("PUSHOVER_USER")
+PUSHOVER_TOKEN = os.getenv("PUSHOVER_TOKEN")
 STACK_APPS_KEY = os.getenv("STACK_APPS_KEY")  # optional
 # ----------------------------------------------------------------------
 
