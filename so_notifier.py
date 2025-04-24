@@ -5,34 +5,51 @@ with any tag in TAGS.
 GitHub Action will run this every 2 minutes.
 """
 import os, time, json, pathlib, requests, html
+from dotenv import load_dotenv
+
+load_dotenv(override=False)
 
 # --- CONFIGURE ---------------------------------------------------------
-TAGS = ["selenium", "web-scraping", "python"]          # ← your tag list
+TAGS = ["selenium", "web-scraping"]          # ← your tag list
 CACHE_FILE = pathlib.Path("last_seen.json")  # persisted by Git
 SO_API = "https://api.stackexchange.com/2.3/questions"
-PUSHOVER_USER = os.environ["PUSHOVER_USER"]
-PUSHOVER_TOKEN = os.environ["PUSHOVER_TOKEN"]
+
+PUSHOVER_USER = os.getenv["PUSHOVER_USER"]
+PUSHOVER_TOKEN = os.getenv["PUSHOVER_TOKEN"]
 STACK_APPS_KEY = os.getenv("STACK_APPS_KEY")  # optional
 # ----------------------------------------------------------------------
 
+DAY_SEC = 24 * 60 * 60
+NOW = int(time.time())
+WINDOW_START = NOW - DAY_SEC
 
-def load_cache() -> dict:
+
+if not PUSHOVER_USER or not PUSHOVER_TOKEN:
+    raise RuntimeError("Missing Pushover credentials: check env variables/secrets")
+
+
+def load_seen() -> dict[int, int]:
     if CACHE_FILE.exists():
-        return json.loads(CACHE_FILE.read_text())
-    return {"last": 0}
+        with CACHE_FILE.open() as f:
+            return {int(k): v for k, v in json.load(f).items()}
+    return {}
 
 
-def save_cache(data: dict) -> None:
-    CACHE_FILE.write_text(json.dumps(data))
+def save_seen(seen: dict[int, int]) -> None:
+    # Keep only IDs in the last 24 h to stop the file growing forever
+    trimmed = {qid: dt for qid, dt in seen.items() if dt >= WINDOW_START}
+    CACHE_FILE.write_text(json.dumps(trimmed, separators=(",", ":")))
 
-def fetch_new(since: int):
+
+
+def fetch_recent():
     params = {
         "order": "desc",
-        "sort":  "creation",
-        "site":  "stackoverflow",
-        "pagesize": 30,
-        "fromdate": since + 1,
-        "tagged":  ";".join(TAGS)
+        "sort": "creation",
+        "site": "stackoverflow",
+        "pagesize": 100,
+        "fromdate": WINDOW_START,
+        "tagged": ";".join(TAGS)
     }
     if STACK_APPS_KEY:
         params["key"] = STACK_APPS_KEY
@@ -42,6 +59,7 @@ def fetch_new(since: int):
 
 
 def push(title: str, url: str):
+    print(f"Pushing: {title}")
     r = requests.post("https://api.pushover.net/1/messages.json", data={
         "token":   PUSHOVER_TOKEN,
         "user":    PUSHOVER_USER,
@@ -53,11 +71,21 @@ def push(title: str, url: str):
 
 
 def main():
-    cache = load_cache()
-    for q in reversed(fetch_new(cache["last"])):
+    seen = load_seen()                  # question_id → creation_date
+    new_items = []
+
+    for q in fetch_recent():
+        qid = q["question_id"]
+        if qid not in seen:
+            new_items.append(q)         # collect unseen
+            seen[qid] = q["creation_date"]
+
+    # push oldest→newest for proper ordering
+    for q in reversed(new_items):
         push(html.unescape(q["title"]), q["link"])
-        cache["last"] = max(cache["last"], q["creation_date"])
-    save_cache(cache)
+
+    save_seen(seen)
+    print(f"Pushed {len(new_items)} new questions.")
 
 
 if __name__ == "__main__":
