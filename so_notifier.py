@@ -7,7 +7,7 @@ GitHub Action will run this every 2 minutes.
 import os, time, json, pathlib, requests, html
 
 # --- CONFIGURE ---------------------------------------------------------
-TAGS = ["selenium", "web-scraping"]          # ← your tag list
+TAGS = ["selenium", "web-scraping", "python"]          # ← your tag list
 CACHE_FILE = pathlib.Path("last_seen.json")  # persisted by Git
 SO_API = "https://api.stackexchange.com/2.3/questions"
 PUSHOVER_USER = os.environ["PUSHOVER_USER"]
