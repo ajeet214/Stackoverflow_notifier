@@ -2,6 +2,8 @@ name: stackoverflow-tag-alert
 on:
   schedule:
     - cron: "*/5 * * * *"          # every 5 minutes
+permissions:
+  contents: write
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -16,3 +18,21 @@ jobs:
           PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
           STACK_APPS_KEY:     ${{ secrets.STACK_APPS_KEY }}   # optional
         run: python so_notifier.py
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Commit and Push if data.json changed
+        run: |
+          git add data.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update data.json with latest question IDs"
+            git push
+          fi
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHB_TOKEN }}
