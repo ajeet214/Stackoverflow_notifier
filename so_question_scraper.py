@@ -68,7 +68,7 @@ def parse_question(question: bs4.element.Tag) -> Dict[str, str]:
     post_time = question.select_one('time.s-user-card--time>span').get('title')
 
     # Whether the question already has an accepted answer
-    answer_accepted = bool(
+    accepted_answer = bool(
         question.select_one(
             "div.s-post-summary--stats-item.has-answers.has-accepted-answer"
         )
@@ -86,7 +86,7 @@ def parse_question(question: bs4.element.Tag) -> Dict[str, str]:
         "user_profile": user_profile,
         "user_name": user_name,
         "post_time": post_time,
-        "answer_accepted": answer_accepted,
+        "accepted_answer": accepted_answer,
     }
 
 
