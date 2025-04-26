@@ -5,6 +5,7 @@ with any tag in TAGS.
 GitHub Action will run this every 5 minutes.
 """
 import json
+from typing import List, Dict
 from datetime import datetime, timedelta
 from pathlib import Path
 import os, time, requests
@@ -85,16 +86,15 @@ def clean_old_entries(data: dict):
     return
 
 
-def push(title: str, url: str, a_count: str, accepted_answer):
+def push(title: str, url: str, a_count: str, accepted_answer, tags: List[str]):
     print(f"Pushing: {title}")
     r = requests.post("https://api.pushover.net/1/messages.json", data={
         "token":   PUSHOVER_TOKEN,
         "user":    PUSHOVER_USER,
-        "title":   "StackOverflow: new question",
-        "message": title,
-        "url":     url,
-        "answer_count": a_count,
-        "have_accepted": accepted_answer
+        "title":   title,
+        "message": f"<b>metadata:</b>\ntags: {tags}\nanswer_count: {a_count}\nhave_accepted: {accepted_answer}",
+        "url": url,
+        "html": 1
     })
     r.raise_for_status()
 
@@ -116,7 +116,8 @@ def main(tag_name: str):
             push(title=q['title'],
                  url=q['question_link'],
                  a_count=q['answer_count'],
-                 accepted_answer=q['accepted_answer']
+                 accepted_answer=q['accepted_answer'],
+                 tags = q['tags']
                  )
 
         else:
