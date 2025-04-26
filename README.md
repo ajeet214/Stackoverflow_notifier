@@ -3,6 +3,8 @@
 This project automatically monitors new questions posted on StackOverflow for specific tags (like `selenium`) and sends iOS notifications via [Pushover](https://pushover.net). The GitHub Actions workflow runs every 5 minutes, ensuring you stay updated in real-time without receiving duplicates or stale alerts.
 
 ---
+![Project Aechitecture:](https://github.com/ajeet214/Stackoverflow_notifier/blob/main/stackoverflow_notifier.png?raw=true)
+
 
 ## 🚀 Features
 
