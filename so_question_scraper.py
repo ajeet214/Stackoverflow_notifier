@@ -107,7 +107,8 @@ def scrape_questions(tag: str, count=5) -> List[Dict[str, str]]:
             A list of dictionaries—one per question.
         """
     url = f"{BASE_URL }/questions/tagged/{tag}"
-    response = requests.get(url)
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"}
+    response = requests.get(url, headers=headers)
     response.raise_for_status()  # raise if HTTP status is not 200
 
     soup = bs4.BeautifulSoup(response.content, features='html.parser')
